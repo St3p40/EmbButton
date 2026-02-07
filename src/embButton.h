@@ -9,20 +9,22 @@
 unsigned long (*embButtonMillisFunc) ();
 #endif
 
-typedef enum embButtonState {
+typedef enum
+{
   AWAIT = 0,
   PRESSED,
   HELD,
   RELEASED = -1
-};
+  }embButtonState;
 
-typedef enum embButtonPressType {
+typedef enum
+{
   CLICK = 0,
   HOLDING,
   NONE = -1
-};
+  } embButtonPressType;
 
-typedef struct embButton_t
+typedef struct
 {
     char isClicked;
     char isReleased;
@@ -30,8 +32,8 @@ typedef struct embButton_t
 
     char _lastState;
     
-    char clicks;
-    char endClicks;
+    unsigned short clicks;
+    unsigned short endClicks;
 
     unsigned int _lastChange;
 
@@ -145,6 +147,5 @@ void embButtonTick(embButton_t *btn)
     }
   btn->_lastState = reading;
 };
-
 
 #endif
