@@ -9,7 +9,18 @@
 unsigned long (*embButtonMillisFunc) ();
 #endif
 
-typedef enum embButtonState {await, pressed, hold, released};
+typedef enum embButtonState {
+  AWAIT = 0,
+  PRESSED,
+  HELD,
+  RELEASED = -1
+};
+
+typedef enum embButtonPressType {
+  CLICK = 0,
+  HOLDING,
+  NONE = -1
+};
 
 typedef struct embButton_t
 {
@@ -21,7 +32,6 @@ typedef struct embButton_t
     
     char clicks;
     char endClicks;
-    char clicksWithHold;
 
     unsigned int _lastChange;
 
@@ -31,6 +41,7 @@ typedef struct embButton_t
     unsigned int debounceTime;
 
     embButtonState state;
+    embButtonPressType lastPressType;
     
     char (*buttonCheck) ();
 #ifndef EmbBtnOneMillisFunc
@@ -45,6 +56,7 @@ void embButtonTick(embButton_t *btn)
       btn->isHold = 0;
       btn->isReleased = 0;
       btn->endClicks = 0;
+      btn->lastPressType = NONE;
 
       char _pressed = 0;
       unsigned long t = _EMBBTNMILLISFUNC();
@@ -60,23 +72,23 @@ void embButtonTick(embButton_t *btn)
         {
           switch (btn->state)
           {
-            case await:
-              btn->state = pressed;
+            case AWAIT:
+              btn->state = PRESSED;
               btn->timer = t;
               btn->clicks = 1;
               btn->isClicked = 1;
               break;
 
-            case pressed:
+            case PRESSED:
               if (t - btn->timer >= btn->holdTime)
               {
-                btn->state = hold;
+                btn->state = HELD;
                 btn->isHold = 1;
               }
             break;
 
-          case released:
-            btn->state = pressed;
+          case RELEASED:
+            btn->state = PRESSED;
             btn->timer = t;
             btn->clicks++;
             btn->isClicked = 1;
@@ -87,39 +99,50 @@ void embButtonTick(embButton_t *btn)
       {
         switch (btn->state)
         {
-          case pressed:  
-            if (btn->clicks == 15)
+          case PRESSED:  
+            btn->isReleased = 1;
+            btn->lastPressType = CLICK;
+            if (btn->clicks >= 254)
             {
-              btn->state = await;
+              btn->state = AWAIT;
               btn->endClicks = btn->clicks;
               btn->clicks = 0;
             }
             else
             { 
-              btn->state = released; 
+              btn->state = RELEASED; 
               btn->timer = t;
-              btn->isReleased = 1;
+            }
           break;
 
-          case hold:
-            btn->state = await;
-            btn->timer = t - btn->timer;
-            btn->clicks = 0; btn->isReleased = 1;
+          case HELD:
+            btn->isReleased = 1;
+            btn->lastPressType = HOLDING;
+            if (btn->clicks >= 254)
+            {
+              btn->state = AWAIT;
+              btn->endClicks = btn->clicks;
+              btn->clicks = 0;
+            }
+            else
+            { 
+              btn->state = RELEASED; 
+              btn->timer = t;
+            }
           break;
 
-          case released:
+          case RELEASED:
             if (t - btn->timer >= btn->releaseTime)
             {
-              btn->state = await;
+              btn->state = AWAIT;
               btn->timer = t;
               btn->endClicks = btn->clicks;
               btn->clicks = 0;
             }
           break;
         }
-      }
-    }    
-  }
+      }    
+    }
   btn->_lastState = reading;
 };
 
