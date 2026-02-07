@@ -11,18 +11,18 @@ unsigned long (*embButtonMillisFunc) ();
 
 typedef enum
 {
-  AWAIT = 0,
-  PRESSED,
-  HELD,
-  RELEASED = -1
-  }embButtonState;
+  EMB_BTN_STATE_RELEASED = -1,
+  EMB_BTN_STATE_AWAIT = 0,
+  EMB_BTN_STATE_PRESSED,
+  EMB_BTN_STATE_HELD
+} embButtonState;
 
 typedef enum
 {
-  CLICK = 0,
-  HOLDING,
-  NONE = -1
-  } embButtonPressType;
+  EMB_BTN_PRESS_NONE = -1,
+  EMB_BTN_PRESS_CLICK = 0,
+  EMB_BTN_PRESS_HOLDING
+} embButtonPressType;
 
 typedef struct
 {
@@ -30,10 +30,10 @@ typedef struct
     char isReleased;
     char isHold;
 
+    char endClicks;
     char _lastState;
-    
+
     unsigned short clicks;
-    unsigned short endClicks;
 
     unsigned int _lastChange;
 
@@ -44,7 +44,7 @@ typedef struct
 
     embButtonState state;
     embButtonPressType lastPressType;
-    
+
     char (*buttonCheck) ();
 #ifndef EmbBtnOneMillisFunc
 #define _EMBBTNMILLISFUNC btn->millisFunc
@@ -57,8 +57,13 @@ void embButtonTick(embButton_t *btn)
       btn->isClicked = 0;
       btn->isHold = 0;
       btn->isReleased = 0;
-      btn->endClicks = 0;
-      btn->lastPressType = NONE;
+      btn->lastPressType = EMB_BTN_PRESS_NONE;
+
+      if (btn->endClicks)
+      {
+        btn->clicks = 0;
+        btn->endClicks = 0;
+      }
 
       char _pressed = 0;
       unsigned long t = _EMBBTNMILLISFUNC();
@@ -74,23 +79,23 @@ void embButtonTick(embButton_t *btn)
         {
           switch (btn->state)
           {
-            case AWAIT:
-              btn->state = PRESSED;
+            case EMB_BTN_STATE_AWAIT:
+              btn->state = EMB_BTN_STATE_PRESSED;
               btn->timer = t;
               btn->clicks = 1;
               btn->isClicked = 1;
               break;
 
-            case PRESSED:
+            case EMB_BTN_STATE_PRESSED:
               if (t - btn->timer >= btn->holdTime)
               {
-                btn->state = HELD;
+                btn->state = EMB_BTN_STATE_HELD;
                 btn->isHold = 1;
               }
             break;
 
-          case RELEASED:
-            btn->state = PRESSED;
+          case EMB_BTN_STATE_RELEASED:
+            btn->state = EMB_BTN_STATE_PRESSED;
             btn->timer = t;
             btn->clicks++;
             btn->isClicked = 1;
@@ -101,51 +106,49 @@ void embButtonTick(embButton_t *btn)
       {
         switch (btn->state)
         {
-          case PRESSED:  
+          case EMB_BTN_STATE_PRESSED:
             btn->isReleased = 1;
-            btn->lastPressType = CLICK;
+            btn->lastPressType = EMB_BTN_PRESS_CLICK;
             if (btn->clicks >= 254)
             {
-              btn->state = AWAIT;
-              btn->endClicks = btn->clicks;
-              btn->clicks = 0;
+              btn->state = EMB_BTN_STATE_AWAIT;
+              btn->endClicks = 1;
             }
             else
-            { 
-              btn->state = RELEASED; 
+            {
+              btn->state = EMB_BTN_STATE_RELEASED;
               btn->timer = t;
             }
           break;
 
-          case HELD:
+          case EMB_BTN_STATE_HELD:
             btn->isReleased = 1;
-            btn->lastPressType = HOLDING;
+            btn->lastPressType = EMB_BTN_PRESS_HOLDING;
             if (btn->clicks >= 254)
             {
-              btn->state = AWAIT;
-              btn->endClicks = btn->clicks;
-              btn->clicks = 0;
+              btn->state = EMB_BTN_STATE_AWAIT;
+              btn->endClicks = 1;
             }
             else
-            { 
-              btn->state = RELEASED; 
+            {
+              btn->state = EMB_BTN_STATE_RELEASED;
               btn->timer = t;
             }
           break;
 
-          case RELEASED:
+          case EMB_BTN_STATE_RELEASED:
             if (t - btn->timer >= btn->releaseTime)
             {
-              btn->state = AWAIT;
+              btn->state = EMB_BTN_STATE_AWAIT;
               btn->timer = t;
-              btn->endClicks = btn->clicks;
-              btn->clicks = 0;
+              btn->endClicks = 1;
             }
           break;
         }
-      }    
+      }
     }
   btn->_lastState = reading;
 };
+
 
 #endif

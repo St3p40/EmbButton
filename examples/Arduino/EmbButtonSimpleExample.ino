@@ -22,19 +22,25 @@ void loop() {
   else
     digitalWrite(13, 0);
 
-  if (btn.state == PRESSED)
+  if (btn.state == EMB_BTN_STATE_PRESSED)
     digitalWrite(3, 1);
   else
     digitalWrite(3, 0);
 
-    if (btn.state == HELD)
+    if (btn.state == EMB_BTN_STATE_HELD)
     digitalWrite(4, 1);
   else
     digitalWrite(4, 0);
 
   if (btn.lastPressType>=0)
+  {
+    //Serial.print((btn.lastPressType)?"-":"."); // Morse code output
     Serial.print((btn.lastPressType)?"Hold ":"Clicked ");
-  
-  if (btn.endClicks)
-    Serial.print("Clicks:" + String(btn.endClicks) + "\n");
+
+  }
+
+  if (btn.endClicks){
+   //Serial.print(" "); // Morse code output
+    Serial.print("\nClicks:" + String(btn.clicks) + "\n");
+  }
 }
