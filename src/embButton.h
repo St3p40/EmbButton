@@ -31,7 +31,9 @@ typedef struct
     char isHold;
 
     char endClicks;
+#ifndef EmbBtnDisableDebounce
     char _lastState;
+#endif
 
     unsigned short clicks;
 
@@ -40,8 +42,9 @@ typedef struct
     unsigned int timer;
     unsigned int holdTime;
     unsigned int releaseTime;
+#ifndef EmbBtnDisableDebounce
     unsigned int debounceTime;
-
+#endif
     embButtonState state;
     embButtonPressType lastPressType;
 
@@ -71,13 +74,15 @@ void embButtonTick(embButton_t *btn)
       char _pressed = 0;
       unsigned long t = _EMBBTNMILLISFUNC();
       char reading = btn->buttonCheck();
+#ifndef EmbBtnDisableDebounce
       if (reading != btn->_lastState)
       {
           btn->_lastChange = t;
       }
       if (t - btn->_lastChange > btn->debounceTime)
       {
-        _pressed = !reading;
+#endif
+        _pressed = reading;
         if (_pressed)
         {
           switch (btn->state)
@@ -149,8 +154,10 @@ void embButtonTick(embButton_t *btn)
           break;
         }
       }
+#ifndef EmbBtnDisableDebounce
     }
   btn->_lastState = reading;
+#endif
 };
 
 

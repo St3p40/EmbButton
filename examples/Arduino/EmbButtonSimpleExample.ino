@@ -3,7 +3,7 @@ char btn_read() {return digitalRead(2);}
 embButton_t btn={0};
 
 void setup() {
-  pinMode(2, INPUT_PULLUP);
+  pinMode(3, INPUT);
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT);
   pinMode(13, OUTPUT);
