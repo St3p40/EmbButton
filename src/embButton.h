@@ -54,6 +54,9 @@ typedef struct
 
 void embButtonTick(embButton_t *btn)
 {
+      if (!btn)
+        return;
+
       btn->isClicked = 0;
       btn->isHold = 0;
       btn->isReleased = 0;

@@ -32,11 +32,10 @@ void loop() {
   else
     digitalWrite(4, 0);
 
-  if (btn.lastPressType>=0)
+  if (btn.isReleased)
   {
     //Serial.print((btn.lastPressType)?"-":"."); // Morse code output
     Serial.print((btn.lastPressType)?"Hold ":"Clicked ");
-
   }
 
   if (btn.endClicks){
