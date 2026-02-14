@@ -4,6 +4,16 @@
 //EmbButton by st3p40
 //06.02.26
 
+#ifndef EmbBtnDefaultDebTimer
+#define EmbBtnDefaultDebTimer 50
+#endif
+#ifndef EmbBtnDefaultHoldTimer
+#define EmbBtnDefaultHoldTimer 500
+#endif
+#ifndef EmbBtnDefaultReleaseTimer
+#define EmbBtnDefaultReleaseTimer 500
+#endif
+
 #ifdef EmbBtnOneMillisFunc
 #define _EMBBTNMILLISFUNC embButtonMillisFunc
 unsigned long (*embButtonMillisFunc) ();
@@ -26,27 +36,27 @@ typedef enum
 
 typedef struct
 {
-    char isClicked=0;
-    char isReleased=0;
-    char isHold=0;
-    char endClicks=0;
+    char isClicked = 0;
+    char isReleased = 0;
+    char isHold = 0;
+    char endClicks = 0;
 
 #ifndef EmbBtnDisableDebounce
-    char _lastState=0;
+    char _lastState = 0;
 #endif
 
-    unsigned short clicks=0;
+    unsigned short clicks = 0;
 
-    unsigned int _lastChange=0;
+    unsigned int _lastChange = 0;
 
-    unsigned int timer=0;
-    unsigned int holdTime=0;
-    unsigned int releaseTime=0;
+    unsigned int timer = 0;
+    unsigned int holdTime = EmbBtnDefaultHoldTimer;
+    unsigned int releaseTime = EmbBtnDefaultReleaseTimer;
 #ifndef EmbBtnDisableDebounce
-    unsigned int debounceTime=0;
+    unsigned int debounceTime = EmbBtnDefaultDebTimer;
 #endif
-    embButtonState state=EMB_BTN_STATE_AWAIT;
-    embButtonPressType lastPressType=EMB_BTN_PRESS_NONE;
+    embButtonState state = EMB_BTN_STATE_AWAIT;
+    embButtonPressType lastPressType = EMB_BTN_PRESS_NONE;
 
     char (*buttonCheck) ();
 #ifndef EmbBtnOneMillisFunc
@@ -159,6 +169,5 @@ void embButtonTick(embButton_t *btn)
   btn->_lastState = reading;
 #endif
 };
-
 
 #endif
