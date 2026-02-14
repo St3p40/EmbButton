@@ -100,118 +100,125 @@ typedef struct
     embButtonState state = EMB_BTN_STATE_AWAIT;
     embButtonPressType lastPressType = EMB_BTN_PRESS_NONE;
 
-    char (*buttonCheck) ();
+    char (*buttonCheck) () = 0;
 #ifndef EmbBtnOneMillisFunc
 #define _EMBBTNMILLISFUNC btn->millisFunc
-    unsigned long (*millisFunc) ();
+    unsigned long (*millisFunc) () = 0;
 #endif
 } embButton_t;
 
-void embButtonTick(embButton_t *btn)
+void embButtonTick(embButton_t *btnptr, size_t amt = 1)
 {
-      if (!btn)
+      if (!btnptr)
         return;
 
-      btn->isClicked = 0;
-      btn->isHold = 0;
-      btn->isReleased = 0;
-      btn->lastPressType = EMB_BTN_PRESS_NONE;
-
-      if (btn->endClicks)
+      for (embButton_t *btn = btnptr; btn<btnptr+amt; btn++)
       {
-        btn->clicks = 0;
-        btn->endClicks = 0;
-      }
+        if (!btn->buttonCheck)
+        {
+          continue;
+        }
+        btn->isClicked = 0;
+        btn->isHold = 0;
+        btn->isReleased = 0;
+        btn->lastPressType = EMB_BTN_PRESS_NONE;
 
-      char _pressed = 0;
-      unsigned long t = _EMBBTNMILLISFUNC();
-      char reading = btn->buttonCheck();
+        if (btn->endClicks)
+        {
+          btn->clicks = 0;
+          btn->endClicks = 0;
+        }
+
+        char _pressed = 0;
+        unsigned long t = _EMBBTNMILLISFUNC();
+        char reading = btn->buttonCheck();
 #ifndef EmbBtnDisableDebounce
-      if (reading != btn->_lastState)
-      {
-          btn->_lastChange = t;
-      }
-      if (t - btn->_lastChange > _EMBBTNDEBTIMER)
-      {
+        if (reading != btn->_lastState)
+        {
+            btn->_lastChange = t;
+        }
+        if (t - btn->_lastChange > _EMBBTNDEBTIMER)
+        {
 #endif
-        _pressed = reading;
-        if (_pressed)
+          _pressed = reading;
+          if (_pressed)
+          {
+            switch (btn->state)
+            {
+              case EMB_BTN_STATE_AWAIT:
+                btn->state = EMB_BTN_STATE_PRESSED;
+                btn->timer = t;
+                btn->clicks = 1;
+                btn->isClicked = 1;
+              break;
+
+              case EMB_BTN_STATE_PRESSED:
+                if (t - btn->timer >= _EMBBTNHOLDTIMER)
+                {
+                  btn->state = EMB_BTN_STATE_HELD;
+                  btn->isHold = 1;
+                }
+              break;
+
+            case EMB_BTN_STATE_RELEASED:
+              btn->state = EMB_BTN_STATE_PRESSED;
+              btn->timer = t;
+              btn->clicks++;
+              btn->isClicked = 1;
+            break;
+          }
+        }
+        else
         {
           switch (btn->state)
           {
-            case EMB_BTN_STATE_AWAIT:
-              btn->state = EMB_BTN_STATE_PRESSED;
-              btn->timer = t;
-              btn->clicks = 1;
-              btn->isClicked = 1;
-              break;
-
             case EMB_BTN_STATE_PRESSED:
-              if (t - btn->timer >= _EMBBTNHOLDTIMER)
+              btn->isReleased = 1;
+              btn->lastPressType = EMB_BTN_PRESS_CLICK;
+              if (btn->clicks >= EmbBtnMaxClicks)
               {
-                btn->state = EMB_BTN_STATE_HELD;
-                btn->isHold = 1;
+                btn->state = EMB_BTN_STATE_AWAIT;
+                btn->endClicks = 1;
+              }
+              else
+              {
+                btn->state = EMB_BTN_STATE_RELEASED;
+                btn->timer = t;
               }
             break;
 
-          case EMB_BTN_STATE_RELEASED:
-            btn->state = EMB_BTN_STATE_PRESSED;
-            btn->timer = t;
-            btn->clicks++;
-            btn->isClicked = 1;
-          break;
-         }
-      }
-      else
-      {
-        switch (btn->state)
-        {
-          case EMB_BTN_STATE_PRESSED:
-            btn->isReleased = 1;
-            btn->lastPressType = EMB_BTN_PRESS_CLICK;
-            if (btn->clicks >= EmbBtnMaxClicks)
-            {
-              btn->state = EMB_BTN_STATE_AWAIT;
-              btn->endClicks = 1;
-            }
-            else
-            {
-              btn->state = EMB_BTN_STATE_RELEASED;
-              btn->timer = t;
-            }
-          break;
-
-          case EMB_BTN_STATE_HELD:
-            btn->isReleased = 1;
-            btn->lastPressType = EMB_BTN_PRESS_HOLDING;
+            case EMB_BTN_STATE_HELD:
+              btn->isReleased = 1;
+              btn->lastPressType = EMB_BTN_PRESS_HOLDING;
 #ifndef EmbBtnEndClicksAfterHolding
-            if (btn->clicks >= EmbBtnMaxClicks)
-            {
-              btn->state = EMB_BTN_STATE_AWAIT;
-              btn->endClicks = 1;
-            }
-            else
+              if (btn->clicks >= EmbBtnMaxClicks)
+              {
+                btn->state = EMB_BTN_STATE_AWAIT;
+                btn->endClicks = 1;
+              }
+              else
 #endif
-            {
-              btn->state = EMB_BTN_STATE_RELEASED;
-              btn->timer = t;
-            }
-          break;
+              {
+                btn->state = EMB_BTN_STATE_RELEASED;
+                btn->timer = t;
+              }
+            break;
 
-          case EMB_BTN_STATE_RELEASED:
-            if (t - btn->timer >= _EMBBTNRELEASETIMER)
-            {
-              btn->state = EMB_BTN_STATE_AWAIT;
-              btn->timer = t;
-              btn->endClicks = 1;
-            }
-          break;
+            case EMB_BTN_STATE_RELEASED:
+              if (t - btn->timer >= _EMBBTNRELEASETIMER)
+              {
+                btn->state = EMB_BTN_STATE_AWAIT;
+                btn->timer = t;
+                btn->endClicks = 1;
+              }
+            break;
+          }
         }
-      }
 #ifndef EmbBtnDisableDebounce
-    }
-  btn->_lastState = reading;
+      }
+    btn->_lastState = reading;
 #endif
+  }
 };
 
 #endif
