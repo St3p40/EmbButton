@@ -13,7 +13,7 @@
 //     --=.    =@#                +@@*                   @@# .=--
 //             *@%:               -@@=      =#%%*
 //             %@@@@@ #@*  +@      %%      @@. @@% %@#=
-//             @@* %@*@@*  +@. --.    .-- .@@  *@@ @@*@@@
+//             @@* %@ @@*  +@.            .@@  *@@ @@*@@@
 //             @@@@@# %@%  %@-  ++%@@%++  :@%  #@% @@ -@@
 //             .+=    .@@-.@@.     @@.    .@@:-@@.    =@@
 //                      .++-       ##       -++.
@@ -71,39 +71,46 @@ typedef enum
 
 typedef struct
 {
-    char isClicked = 0;
-    char isReleased = 0;
-    char isHold = 0;
-    char endClicks = 0;
+  char isClicked = 0;
+  char isReleased = 0;
+  char isHold = 0;
+  char endClicks = 0;
 
 #ifndef EmbBtnDisableDebounce
-    char _lastState = 0;
+  char _lastState = 0;
 #endif
 
-    unsigned short clicks = 0;
+  unsigned short clicks = 0;
 
-    unsigned int _lastChange = 0;
+  unsigned int _lastChange = 0;
 
-    unsigned int timer = 0;
+  unsigned int timer = 0;
 #ifndef EmbBtnOneHoldTimer
 #define _EMBBTNHOLDTIMER btn->holdTime
-    unsigned int holdTime = EmbBtnDefaultHoldTimer;
+  unsigned int holdTime = EmbBtnDefaultHoldTimer;
 #endif
 #ifndef EmbBtnOneReleaseTimer
 #define _EMBBTNRELEASETIMER btn->releaseTime
-    unsigned int releaseTime = EmbBtnDefaultReleaseTimer;
+  unsigned int releaseTime = EmbBtnDefaultReleaseTimer;
 #endif
 #ifndef EmbBtnOneDebTimer || EmbBtnDisableDebounce
 #define _EMBBTNDEBTIMER btn->debounceTime
-    unsigned int debounceTime = EmbBtnDefaultDebTimer;
+  unsigned int debounceTime = EmbBtnDefaultDebTimer;
 #endif
-    embButtonState state = EMB_BTN_STATE_AWAIT;
-    embButtonPressType lastPressType = EMB_BTN_PRESS_NONE;
+  embButtonState state = EMB_BTN_STATE_AWAIT;
+  embButtonPressType lastPressType = EMB_BTN_PRESS_NONE;
 
     char (*buttonCheck) () = 0;
 #ifndef EmbBtnOneMillisFunc
 #define _EMBBTNMILLISFUNC btn->millisFunc
     unsigned long (*millisFunc) () = 0;
+#endif
+
+#ifdef EmbBtnUseActionCallbacks
+  void (*clickedCallback) () = 0;
+  void (*heldCallback) () = 0;
+  void (*releasedCallback) () = 0;
+  void (*endClicksCallback) () = 0;
 #endif
 } embButton_t;
 
@@ -219,6 +226,19 @@ void embButtonTick(embButton_t *btnptr, size_t amt = 1)
     btn->_lastState = reading;
 #endif
   }
+#ifdef EmbBtnUseActionCallbacks
+  for (embButton_t *btn = btnptr; btn<btnptr+amt; btn++)
+  {
+    if (btn->isClicked)
+      btn->clickedCallback();
+    if (btn->isHeld)
+      btn->heldCallback();
+    if (btn->isReleased)
+      btn->releasedCallback();
+    if (btn->endClicks)
+      btn->endClicksCallback();
+  }
+#endif
 };
 
 #endif
