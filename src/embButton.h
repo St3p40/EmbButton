@@ -26,27 +26,27 @@ typedef enum
 
 typedef struct
 {
-    char isClicked;
-    char isReleased;
-    char isHold;
+    char isClicked=0;
+    char isReleased=0;
+    char isHold=0;
+    char endClicks=0;
 
-    char endClicks;
 #ifndef EmbBtnDisableDebounce
-    char _lastState;
+    char _lastState=0;
 #endif
 
-    unsigned short clicks;
+    unsigned short clicks=0;
 
-    unsigned int _lastChange;
+    unsigned int _lastChange=0;
 
-    unsigned int timer;
-    unsigned int holdTime;
-    unsigned int releaseTime;
+    unsigned int timer=0;
+    unsigned int holdTime=0;
+    unsigned int releaseTime=0;
 #ifndef EmbBtnDisableDebounce
-    unsigned int debounceTime;
+    unsigned int debounceTime=0;
 #endif
-    embButtonState state;
-    embButtonPressType lastPressType;
+    embButtonState state=EMB_BTN_STATE_AWAIT;
+    embButtonPressType lastPressType=EMB_BTN_PRESS_NONE;
 
     char (*buttonCheck) ();
 #ifndef EmbBtnOneMillisFunc

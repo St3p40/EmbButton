@@ -1,9 +1,9 @@
 #include "embButton.h"
 char btn_read() {return digitalRead(2);}
-embButton_t btn={0};
+embButton_t btn;
 
 void setup() {
-  pinMode(3, INPUT);
+  pinMode(2, INPUT);
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT);
   pinMode(13, OUTPUT);
