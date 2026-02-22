@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include "../../src/embButton.h"
 
+#define GREEN "\033[92m"
+#define RED   "\033[91m"
+#define RESET "\033[0m"
+
 static char key_down = 0;
 
 unsigned long millis(void)
@@ -50,7 +54,7 @@ int main(int argc, char **argv)
 
     const char *path = argv[1];
     embButton_t btn = {0};
-    btn.debounceTime=175;
+    btn.debounceTime=100;
     btn.releaseTime=500;
     btn.holdTime=1000;
     btn.millisFunc=millis;
@@ -74,12 +78,22 @@ int main(int argc, char **argv)
         printf("Raw input: %d\n", key_down);
         printf("Time: %lu ms\n", millis());
 
-        printf("State: %s %s %s %s\n",(btn.state == 0)?"\033[92mAWAIT\033[0m":"Await", (btn.state == -1)?"\033[92mRELEASED\033[0m":"Released", (btn.state == 1)?"\033[92mPRESSED\033[0m":"Pressed", (btn.state == 2)?"\033[92mHOLD\033[0m":"Hold");
-        printf("Flags: %s %s %s %s\n",(btn.isClicked)?"\033[92mCLICKED\033[0m":"Clicked", (btn.isReleased)?"\033[92mRELEASED\033[0m":"Released", (btn.isHold)?"\033[92mHOLD\033[0m":"Hold", (btn.endClicks)?"\033[92mENDCLICKS\033[0m":"endClicks");
-        printf("Clicks: %d\n", btn.clicks);
-        //printf("Pr3ss time%d",(millis()-btn.timer));
+printf("State:  %s  %s  %s  %s\n",
+       (btn.state == 0)  ? GREEN "AWAIT"    RESET : RED "Await" RESET,
+       (btn.state == -1) ? GREEN "RELEASED" RESET : RED "Released" RESET,
+       (btn.state == 1)  ? GREEN "PRESSED"  RESET : RED "Pressed" RESET,
+       (btn.state == 2)  ? GREEN "HOLD"     RESET : RED "Hold" RESET);
+
+printf("Flags:  %s  %s  %s  %s\n",
+       (btn.isClicked)  ? GREEN "CLICKED"   RESET : RED "Clicked" RESET,
+       (btn.isReleased) ? GREEN "RELEASED"  RESET : RED "Released" RESET,
+       (btn.isHold)     ? GREEN "HOLD"      RESET : RED "Hold" RESET,
+       (btn.endClicks)  ? GREEN "ENDCLICKS" RESET : RED "Endclicks" RESET);
+
+       printf("Clicks: %d\n", btn.clicks);
+        printf("Press time: %ld\n",(btn.state > 0)?(millis()-btn.timer):0);
         fflush(stdout);
-        usleep(50000);
+        usleep(100000);
     }
     close(fd);
 

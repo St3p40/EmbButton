@@ -17,7 +17,7 @@ void setup() {
 
 void loop() {
   embButtonTick(&btn);
-    if (btn.state > 0) //Pressed
+  if (btn.state > 0) //Pressed
     digitalWrite(13, 1);
   else
     digitalWrite(13, 0);
@@ -35,11 +35,12 @@ void loop() {
   if (btn.isReleased)
   {
     //Serial.print((btn.lastPressType)?"-":"."); // Morse code output
-    Serial.print((btn.lastPressType)?"Hold ":"Clicked ");
+    Serial.print((btn.lastPressType)?"Hold: ":"Clicked: ");
+    Serial.println(millis()-btn.timer); //Press time
   }
 
   if (btn.endClicks){
-   //Serial.print(" "); // Morse code output
-    Serial.print("\nClicks:" + String(btn.clicks) + "\n");
+    //Serial.print(" "); // Morse code output
+    Serial.print("Clicks strikes end. Clicks: " + String(btn.clicks) + "\n");
   }
 }

@@ -115,20 +115,26 @@ void embButtonTick(embButton_t *btn)
   {
     return;
   }
+  unsigned long t = _EMBBTNMILLISFUNC();
+  char reading = btn->buttonCheck();
+  char _pressed = 0;
+
   btn->isClicked = 0;
   btn->isHold = 0;
   btn->isReleased = 0;
   btn->lastPressType = EMB_BTN_PRESS_NONE;
-
+  if (btn->isReleased)
+  {
+      btn->timer = t;
+      btn->isReleased = 0;
+  }
   if (btn->endClicks)
   {
     btn->clicks = 0;
     btn->endClicks = 0;
+    btn->timer = 0;
   }
 
-  char _pressed = 0;
-  unsigned long t = _EMBBTNMILLISFUNC();
-  char reading = btn->buttonCheck();
 #ifndef EmbBtnDisableDebounce
   if (reading != btn->_lastState)
   {
@@ -180,7 +186,6 @@ void embButtonTick(embButton_t *btn)
           else
           {
             btn->state = EMB_BTN_STATE_RELEASED;
-            btn->timer = t;
           }
           break;
 
@@ -197,7 +202,6 @@ void embButtonTick(embButton_t *btn)
 #endif
           {
             btn->state = EMB_BTN_STATE_RELEASED;
-            btn->timer = t;
           }
           break;
 
@@ -205,7 +209,6 @@ void embButtonTick(embButton_t *btn)
           if (t - btn->timer >= _EMBBTNRELEASETIMER)
           {
             btn->state = EMB_BTN_STATE_AWAIT;
-            btn->timer = t;
             btn->endClicks = 1;
           }
           break;
