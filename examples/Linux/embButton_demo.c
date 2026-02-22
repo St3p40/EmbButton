@@ -40,10 +40,6 @@ char btn_read(void) {
     return key_down;
 }
 
-void clearScreen() {
-  printf("\033[2J\033[1;1H");
-}
-
 int main(int argc, char **argv)
 {
     millis();
@@ -64,8 +60,9 @@ int main(int argc, char **argv)
         perror("open");
         return 1;
     }
+    printf("\033[?25l\033[2J\033[1;1H"); //Clear screen and hide cursor
     while (1) {
-        clearScreen();
+        printf("\033[H"); //Go to 1st line
         puts("EmbButton Example\n");
         printf("Checking GPIO value file: %s\n\n", path);
         char x = 0;
@@ -76,7 +73,7 @@ int main(int argc, char **argv)
         embButtonTick(&btn);
 
         printf("Raw input: %d\n", key_down);
-        printf("Time: %lu ms\n", millis());
+        printf("\033[KTime: %lu ms\n", millis()); //Erase printed line before printing new one
 
 printf("State:  %s  %s  %s  %s\n",
        (btn.state == 0)  ? GREEN "AWAIT"    RESET : RED "Await" RESET,
@@ -90,12 +87,13 @@ printf("Flags:  %s  %s  %s  %s\n",
        (btn.isHold)     ? GREEN "HOLD"      RESET : RED "Hold" RESET,
        (btn.endClicks)  ? GREEN "ENDCLICKS" RESET : RED "Endclicks" RESET);
 
-       printf("Clicks: %d\n", btn.clicks);
-        printf("Press time: %ld\n",(btn.state > 0)?(millis()-btn.timer):0);
+       printf("\033[KClicks: %d\n", btn.clicks);
+        printf("\033[KPress time: %ld\n",(btn.state > 0)?(millis()-btn.timer):0);
         fflush(stdout);
         usleep(100000);
     }
     close(fd);
+    printf("\033[?25h"); //Show cursor
 
     return 0;
 }
