@@ -64,16 +64,18 @@ int main(int argc, char **argv)
     while (1) {
         printf("\033[H"); //Go to 1st line
         puts("EmbButton Example\n");
-        printf("Checking GPIO value file: %s\n\n", path);
         char x = 0;
         lseek(fd, 0, SEEK_SET);
         read(fd,&x,1);
+
+        printf("\033[KChecking GPIO value file: %s%s%s\n\n",(x == '1' || x == '0')? GREEN : RED, path, RESET); //Erase printed line before printing new one
+
         key_down = (x == '1');
 
         embButtonTick(&btn);
 
-        printf("Raw input: %d\n", key_down);
-        printf("\033[KTime: %lu ms\n", millis()); //Erase printed line before printing new one
+        printf("Raw input: %s%d%s\n", (key_down)? GREEN : RED, key_down, RESET);
+        printf("\033[KTime: %s%lu ms%s\n", GREEN, millis(), RESET);
 
 printf("State:  %s  %s  %s  %s\n",
        (btn.state == 0)  ? GREEN "AWAIT"    RESET : RED "Await" RESET,
@@ -82,13 +84,13 @@ printf("State:  %s  %s  %s  %s\n",
        (btn.state == 2)  ? GREEN "HOLD"     RESET : RED "Hold" RESET);
 
 printf("Flags:  %s  %s  %s  %s\n",
-       (btn.isClicked)  ? GREEN "CLICKED"   RESET : RED "Clicked" RESET,
+       (btn.endClicks)  ? GREEN "ENDCLICKS" RESET : RED "Endclicks" RESET,
        (btn.isReleased) ? GREEN "RELEASED"  RESET : RED "Released" RESET,
-       (btn.isHold)     ? GREEN "HOLD"      RESET : RED "Hold" RESET,
-       (btn.endClicks)  ? GREEN "ENDCLICKS" RESET : RED "Endclicks" RESET);
+       (btn.isClicked)  ? GREEN "CLICKED"   RESET : RED "Clicked" RESET,
+       (btn.isHold)     ? GREEN "HOLD"      RESET : RED "Hold" RESET);
 
-       printf("\033[KClicks: %d\n", btn.clicks);
-        printf("\033[KPress time: %ld\n",(btn.state > 0)?(millis()-btn.timer):0);
+        printf("\033[KClicks: %s%d%s\n", (btn.endClicks)? RED : GREEN, btn.clicks, RESET);
+        printf("\033[KPress time: %s%ld%s\n", (btn.isReleased)? RED : GREEN,(btn.state > 0 || btn.isReleased)?(millis()-btn.timer):0,RESET);
         fflush(stdout);
         usleep(100000);
     }

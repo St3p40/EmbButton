@@ -121,7 +121,6 @@ void embButtonTick(embButton_t *btn)
 
   btn->isClicked = 0;
   btn->isHold = 0;
-  btn->isReleased = 0;
   btn->lastPressType = EMB_BTN_PRESS_NONE;
   if (btn->isReleased)
   {
