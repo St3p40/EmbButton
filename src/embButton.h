@@ -96,11 +96,18 @@ typedef struct
 #endif
 } embButton_t;
 
+#ifdef EmbButtonHandleMultipleButtons
+void embButtonTick(embButton_t *btns, size_t am)
+{
+  if (!btns)
+    return;
+  for (embButton_t* btn = btns; btn < btns + am; btn++){
+#else
 void embButtonTick(embButton_t *btn)
 {
   if (!btn)
     return;
-
+#endif
   if (!btn->buttonCheck || !_EMBBTNMILLISFUNC)
   {
     return;
@@ -205,12 +212,23 @@ void embButtonTick(embButton_t *btn)
   }
   btn->_lastState = reading;
 #endif
-};
+#ifdef EmbButtonHandleMultipleButtons
+  }
+#endif
+}
 #ifdef EmbBtnUseActionCallbacks
+#ifdef EmbButtonHandleMultipleButtons
+void embButtonaActionCallcback(embButton_t *btns, size_t am)
+{
+  if (!btns)
+    return;
+  for (embButton_t* btn = btns; btn < btns + am; btn++){
+#else
 void embButtonaActionCallcback(embButton_t *btn)
 {
   if (!btn)
-    return;
+  return;
+#endif
   if (btn->isClicked)
     btn->clickedCallback();
   if (btn->isHold)
@@ -219,6 +237,9 @@ void embButtonaActionCallcback(embButton_t *btn)
     btn->releasedCallback();
   if (btn->endClicks)
     btn->endClicksCallback();
+#ifdef EmbButtonHandleMultipleButtons
+  }
+#endif
 }
 #endif
 
