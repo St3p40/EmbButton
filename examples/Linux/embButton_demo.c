@@ -49,7 +49,7 @@ int main(int argc, char **argv)
     }
 
     const char *path = argv[1];
-    embButton_t btn = {0};
+    embButton_t btn;
     btn.debounceTime=100;
     btn.releaseTime=500;
     btn.holdTime=1000;
@@ -89,8 +89,9 @@ printf("Flags:  %s  %s  %s  %s\n",
        (btn.isClicked)  ? GREEN "CLICKED"   RESET : RED "Clicked" RESET,
        (btn.isHold)     ? GREEN "HOLD"      RESET : RED "Hold" RESET);
 
-        printf("\033[KClicks: %s%d%s\n", (btn.endClicks)? RED : GREEN, btn.clicks, RESET);
+        printf("\033[KClicks: %s%d %s%s\n", (btn.endClicks)? RED : GREEN, btn.clicks, (btn.lastPressType)? "H" : "C", RESET);
         printf("\033[KPress time: %s%ld%s\n", (btn.isReleased)? RED : GREEN,(btn.state > 0 || btn.isReleased)?(millis()-btn.timer):0,RESET);
+        printf("\033[KIdle time: %s%ld%s\n",GREEN,(btn.state <= 0)?(millis()-btn.timer):0,RESET);
         fflush(stdout);
         usleep(100000);
     }

@@ -52,19 +52,14 @@ typedef enum
   EMB_BTN_STATE_HELD
 } embButtonState;
 
-typedef enum
-{
-  EMB_BTN_PRESS_NONE = -1,
-  EMB_BTN_PRESS_CLICK = 0,
-  EMB_BTN_PRESS_HOLDING
-} embButtonPressType;
-
 typedef struct
 {
   char isClicked;
   char isReleased;
   char isHold;
   char endClicks;
+
+  char lastPressType;
 
   unsigned short clicks;
 
@@ -86,7 +81,6 @@ typedef struct
 #endif
 #endif
   embButtonState state;
-  embButtonPressType lastPressType;
 
   char (*buttonCheck) ();
 #ifndef EmbBtnOneMillisFunc
@@ -117,7 +111,6 @@ void embButtonTick(embButton_t *btn)
 
   btn->isClicked = 0;
   btn->isHold = 0;
-  btn->lastPressType = EMB_BTN_PRESS_NONE;
   if (btn->isReleased)
   {
       btn->timer = t;
@@ -127,7 +120,6 @@ void embButtonTick(embButton_t *btn)
   {
     btn->clicks = 0;
     btn->endClicks = 0;
-    btn->timer = 0;
   }
 
 #ifndef EmbBtnDisableDebounce
@@ -172,7 +164,7 @@ void embButtonTick(embButton_t *btn)
       {
         case EMB_BTN_STATE_PRESSED:
           btn->isReleased = 1;
-          btn->lastPressType = EMB_BTN_PRESS_CLICK;
+          btn->lastPressType = 0;
           if (btn->clicks >= EmbBtnMaxClicks)
           {
             btn->state = EMB_BTN_STATE_AWAIT;
@@ -186,7 +178,7 @@ void embButtonTick(embButton_t *btn)
 
         case EMB_BTN_STATE_HELD:
           btn->isReleased = 1;
-          btn->lastPressType = EMB_BTN_PRESS_HOLDING;
+          btn->lastPressType = 1;
 #ifndef EmbBtnEndClicksAfterHolding
           if (btn->clicks >= EmbBtnMaxClicks)
           {
