@@ -66,13 +66,7 @@ typedef struct
   char isHold;
   char endClicks;
 
-#ifndef EmbBtnDisableDebounce
-  char _lastState;
-#endif
-
   unsigned short clicks;
-
-  unsigned int _lastChange;
 
   unsigned int timer;
 #ifndef EmbBtnOneHoldTimer
@@ -84,6 +78,8 @@ typedef struct
   unsigned int releaseTime;
 #endif
 #ifndef EmbBtnDisableDebounce
+  char _lastState;
+  unsigned int _lastChange;
 #ifndef EmbBtnOneDebTimer
 #define _EMBBTNDEBTIMER btn->debounceTime
   unsigned int debounceTime;
@@ -217,7 +213,12 @@ void embButtonTick(embButton_t *btn)
   }
   btn->_lastState = reading;
 #endif
+};
 #ifdef EmbBtnUseActionCallbacks
+void embButtonaActionCallcback(embButton_t *btn)
+{
+  if (!btn)
+    return;
   if (btn->isClicked)
     btn->clickedCallback();
   if (btn->isHold)
@@ -226,7 +227,7 @@ void embButtonTick(embButton_t *btn)
     btn->releasedCallback();
   if (btn->endClicks)
     btn->endClicksCallback();
+}
 #endif
-};
 
 #endif
