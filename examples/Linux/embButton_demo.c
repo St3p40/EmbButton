@@ -90,8 +90,8 @@ printf("Flags:  %s  %s  %s  %s\n",
        (btn.isHold)     ? GREEN "HOLD"      RESET : RED "Hold" RESET);
 
         printf("\033[KClicks: %s%d %s%s\n", (btn.endClicks)? RED : GREEN, btn.clicks, (btn.lastPressType)? "H" : "C", RESET);
-        printf("\033[KPress time: %s%ld%s\n", (btn.isReleased)? RED : GREEN,(btn.state > 0 || btn.isReleased)?(millis()-btn.timer):0,RESET);
-        printf("\033[KIdle time: %s%ld%s\n",GREEN,(btn.state <= 0)?(millis()-btn.timer):0,RESET);
+        printf("\033[KPress time: %s%ld%s\n", (btn.isReleased)? RED : GREEN,((btn.state > 0 && !btn.isClicked) ^ btn.isReleased)?(millis()-btn.timer):0,RESET);
+        printf("\033[KIdle time: %s%ld%s\n", (btn.isClicked)? RED : GREEN,((btn.state <= 0 && !btn.isReleased) ^ btn.isClicked)?(millis()-btn.timer):0,RESET);
         fflush(stdout);
         usleep(100000);
     }

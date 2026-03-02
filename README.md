@@ -72,6 +72,7 @@ embButtonaActionCallback(&btn);       // Event dispatcher (executes action callb
 ```c
 //!Before including the library!
 #define EmbBtnMaxClicks <value>       // Sets max clicks before automaticaly endClicks event
-#define EmbBtnEndClicksAfterHolding   // (EMFButton logic) endClicks event after holding
+#define EmbBtnMaxClicksSize <value>   // Sets clicks variable size(in bits)
+#define EmbBtnEndClicksAfterHolding   // (EMFButton'ish logic) endClicks event after holding
 #define EmbButtonHandleMultipleButtons// multiple buttons handle with one function ( func(arrptr, amount) )
 ```
