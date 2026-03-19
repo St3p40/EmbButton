@@ -94,8 +94,11 @@ typedef struct
 #endif
 #endif
   embButtonState state;
-
+#ifdef EmbBtnCheckButtonAsValue
+  char *buttonCheck;
+#else
   char (*buttonCheck) ();
+#endif
 #ifndef EmbBtnOneMillisFunc
 #define _EMBBTNMILLISFUNC btn->millisFunc
   unsigned long (*millisFunc) ();
@@ -126,9 +129,11 @@ EmbVarFunPrefix void embButtonTick(embButton_t *btn)
     return;
   }
   unsigned long t = _EMBBTNMILLISFUNC();
+#ifdef EmbBtnCheckButtonAsValue
+  char reading = *btn->buttonCheck;
+#else
   char reading = btn->buttonCheck();
-
-  
+#endif
   btn->isHold = 0;
   if (btn->isClicked)
   {
