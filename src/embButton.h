@@ -20,6 +20,10 @@
 //Made by st3p40
 //06.02.26
 
+#ifndef EmbVarFunPrefix
+#define EmbVarFunPrefix static inline
+#endif
+
 #ifndef EmbBtnMaxClicks
 #define EmbBtnMaxClicks 7
 #endif
@@ -30,22 +34,22 @@
 
 #ifdef EmbBtnOneMillisFunc
 #define _EMBBTNMILLISFUNC embButtonMillisFunc
-unsigned long (*embButtonMillisFunc) ();
+EmbVarFunPrefix unsigned long (*embButtonMillisFunc) ();
 #endif
 
 #ifdef EmbBtnOneDebTimer
 #define _EMBBTNDEBTIMER embButtonDebTimer
-const unsigned int embButtonDebTimer = EmbBtnOneDebTimer;
+EmbVarFunPrefix const unsigned int embButtonDebTimer = EmbBtnOneDebTimer;
 #endif
 
 #ifdef EmbBtnOneHoldTimer
 #define _EMBBTNHOLDTIMER embButtonHoldTimer
-const unsigned int embButtonHoldTimer = EmbBtnOneHoldTimer;
+EmbVarFunPrefix const unsigned int embButtonHoldTimer = EmbBtnOneHoldTimer;
 #endif
 
 #ifdef EmbBtnOneReleaseTimer
 #define _EMBBTNRELEASETIMER embButtonReleaseTimer
-const unsigned int embButtonReleaseTimer = EmbBtnOneReleaseTimer;
+EmbVarFunPrefix const unsigned int embButtonReleaseTimer = EmbBtnOneReleaseTimer;
 #endif
 
 typedef enum
@@ -58,10 +62,10 @@ typedef enum
 
 typedef struct
 {
-  char isClicked :1;
-  char isReleased :1;
-  char isHold :1;
-  char endClicks :1;
+  char isClicked: 1;
+  char isReleased: 1;
+  char isHold: 1;
+  char endClicks: 1;
 
   char lastPressType :1;
 
@@ -83,6 +87,11 @@ typedef struct
 #define _EMBBTNDEBTIMER btn->debounceTime
   unsigned int debounceTime;
 #endif
+#ifdef EmbBtnStepTimer
+  unsigned int secondTimer;
+  unsigned int stepTime;
+  char step;
+#endif
 #endif
   embButtonState state;
 
@@ -101,13 +110,13 @@ typedef struct
 } embButton_t;
 
 #ifdef EmbButtonHandleMultipleButtons
-void embButtonTick(embButton_t *btns, size_t am)
+EmbVarFunPrefix void embButtonTick(embButton_t *btns, size_t am)
 {
   if (!btns)
     return;
   for (embButton_t* btn = btns; btn < btns + am; btn++){
 #else
-void embButtonTick(embButton_t *btn)
+EmbVarFunPrefix void embButtonTick(embButton_t *btn)
 {
   if (!btn)
     return;
@@ -119,6 +128,7 @@ void embButtonTick(embButton_t *btn)
   unsigned long t = _EMBBTNMILLISFUNC();
   char reading = btn->buttonCheck();
 
+  
   btn->isHold = 0;
   if (btn->isClicked)
   {
@@ -135,6 +145,9 @@ void embButtonTick(embButton_t *btn)
     btn->clicks = 0;
     btn->endClicks = 0;
   }
+#ifdef EmbBtnStepTimer
+    btn->step = 0;
+#endif
 
 #ifndef EmbBtnDisableDebounce
   if (reading != btn->_lastState)
@@ -159,8 +172,20 @@ void embButtonTick(embButton_t *btn)
           {
             btn->state = EMB_BTN_STATE_HELD;
             btn->isHold = 1;
+#ifdef EmbBtnStepTimer
+            btn->secondTimer = t;
+#endif
           }
           break;
+#ifdef EmbBtnStepTimer
+        case EMB_BTN_STATE_HELD:
+          if (t - btn->secondTimer >= btn->stepTime)
+          {
+            btn->step = 1;
+            btn->secondTimer = t;
+          }
+          break;
+#endif
       }
     }
     else
@@ -205,13 +230,13 @@ void embButtonTick(embButton_t *btn)
 }
 #ifdef EmbBtnUseActionCallbacks
 #ifdef EmbButtonHandleMultipleButtons
-void embButtonaActionCallcback(embButton_t *btns, size_t am)
+EmbVarFunPrefix void embButtonaActionCallcback(embButton_t *btns, size_t am)
 {
   if (!btns)
     return;
   for (embButton_t* btn = btns; btn < btns + am; btn++){
 #else
-void embButtonaActionCallcback(embButton_t *btn)
+EmbVarFunPrefix void embButtonaActionCallcback(embButton_t *btn)
 {
   if (!btn)
   return;
