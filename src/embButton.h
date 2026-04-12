@@ -3,191 +3,252 @@
 
 //                                .::.
 //                           =@@@@%**#@@@@+
-//                       #@@@+            =@@@#.         @@*
-//                   -@%=       -@@@@@@=       =%@-      @@*
-//    +%@%+         *%#        -@@@@@@@@-        #%#     @@* +%@%*
-//  @@=  -@@*       #@%           @@@@           %@%     @@@@@=  =@@
-// %@@@@@@@@%.      %@@                          @@%     @@@@     +@%
-// @@-              @@@                          @@@     @@@@.    :@@
-// :@@@%=:@@=  =@*  %@+       @@@@@@@@@@@@       +@@     @@@@@-+@@@@-
-//     --=.    =@#                +@@*                   @@# .=--
+//                       #@@@+            =@@@#.           @@
+//                   -@%=       -@@@@@@=       =%@-        @@
+//    +%@%+         *%#        -@@@@@@@@-        #%#       @@  =@@@=
+//  @@=   =@@       #@%  #        @@@@         # %@%       @@@@=  =@@
+// %@@@@@@@@@%      %@@                          @@%       @@@     +@%
+// @@               @@@                          @@@       @@@.    :@@
+// :@@    =@@  =@*  %@+       @@@@@@@@@@@@       +@@       @@@@-+@@@@-
+//    =@@=     =@#                +@@*                     @@# .=--
 //             *@%:               -@@=      =#%%*
 //             %@@@@@ #@*  +@      %%      @@. @@% %@#=
 //             @@* %@ @@*  +@.            .@@  *@@ @@*@@@
 //             @@@@@# %@%  %@-  ++%@@%++  :@%  #@% @@ -@@
 //             .+=    .@@-.@@.     @@.    .@@:-@@.    =@@
 //                      .++-       ##       -++.
-//Made by st3p40
+
+//Made by St3p40
 //06.02.26
 
-#ifndef EmbVarFunPrefix
-#define EmbVarFunPrefix static inline
+
+//Max clicks
+#ifndef EMBBTN_MAX_CLICKS
+#define EMBBTN_MAX_CLICKS 7
 #endif
 
-#ifndef EmbBtnMaxClicks
-#define EmbBtnMaxClicks 7
+#ifndef EMBBTN_CLICKS_VAR_SIZE
+#define EMBBTN_CLICKS_VAR_SIZE 3
 #endif
 
-#ifndef EmbBtnMaxClicksSize
-#define EmbBtnMaxClicksSize 3
+#if EMBBTN_MAX_CLICKS > ((1 << EMBBTN_CLICKS_VAR_SIZE) - 1)
+#error EmbButton: EMBBTN_MAX_CLICKS is set without EMBBTN_CLICKS_VAR_SIZE or EMBBTN_MAX_CLICKS exceeds EMBBTN_CLICKS_VAR_SIZE capacity
 #endif
 
-#ifdef EmbBtnOneMillisFunc
-#define _EMBBTNMILLISFUNC embButtonMillisFunc
-EmbVarFunPrefix unsigned long (*embButtonMillisFunc) ();
+//Input info
+#ifdef EMBBTN_MILLIS_FOR_EACH_BTN
+#define _EMBBTN_MILLIS_NAME millis
+#define _EMBBTN_MILLIS_PREF btn->
+#else
+#define _EMBBTN_MILLIS_NAME embButtonMillis
+#define _EMBBTN_MILLIS_PREF
 #endif
 
-#ifdef EmbBtnOneDebTimer
-#define _EMBBTNDEBTIMER embButtonDebTimer
-EmbVarFunPrefix const unsigned int embButtonDebTimer = EmbBtnOneDebTimer;
+#ifndef EMBBTN_BTN_READ
+#define EMBBTN_BTN_READ CLBK
 #endif
 
-#ifdef EmbBtnOneHoldTimer
-#define _EMBBTNHOLDTIMER embButtonHoldTimer
-EmbVarFunPrefix const unsigned int embButtonHoldTimer = EmbBtnOneHoldTimer;
+#ifndef EMBBTN_BTN_MILLIS
+#define EMBBTN_BTN_MILLIS CLBK
 #endif
 
-#ifdef EmbBtnOneReleaseTimer
-#define _EMBBTNRELEASETIMER embButtonReleaseTimer
-EmbVarFunPrefix const unsigned int embButtonReleaseTimer = EmbBtnOneReleaseTimer;
+#if EMBBTN_BTN_READ == CLBK
+#define _EMBBTN_BTN_DECLARATION unsigned char (*buttonCheck) (void)
+#define _EMBBTN_BTN_READ btn->buttonCheck()
+#elif EMBBTN_BTN_READ == PNTR
+#define _EMBBTN_BTN_DECLARATION unsigned char* buttonCheck
+#define _EMBBTN_BTN_READ *btn->buttonCheck
+#elif EMBBTN_BTN_READ == VRBL
+#define _EMBBTN_BTN_DECLARATION unsigned char buttonCheck
+#define _EMBBTN_BTN_READ btn->buttonCheck
+#else
+#error EmbButton: EMBBTN_BTN_READ definition as macros isn't implemented
 #endif
 
+#if EMBBTN_BTN_MILLIS == CLBK
+#define _EMBBTN_MILLIS_DECLARATION unsigned long (*_EMBBTN_MILLIS_NAME) (void)
+#define _EMBBTN_MILLIS_READ _EMBBTN_MILLIS_PREF _EMBBTN_MILLIS_NAME ()
+#elif EMBBTN_BTN_MILLIS == PNTR
+#define _EMBBTN_MILLIS_DECLARATION unsigned long* _EMBBTN_MILLIS_NAME
+#define _EMBBTN_MILLIS_READ * _EMBBTN_MILLIS_PREF _EMBBTN_MILLIS_NAME
+#elif EMBBTN_BTN_MILLIS == VRBL
+#define _EMBBTN_MILLIS_DECLARATION unsigned long buttonCheck
+#define _EMBBTN_MILLIS_READ _EMBBTN_MILLIS_PREF _EMBBTN_MILLIS_NAME
+#else
+#ifndef EMBBTN_MILLIS_FOR_EACH_BTN
+#define _EMBBTN_MILLIS_READ EmbBtnMillis
+#else
+#error EmbButton: EMBBTN_BTN_MILLIS can't be as macros with EMBBTN_MILLIS_FOR_EACH_BTN
+#endif
+#endif
+
+#ifndef EMBBTN_MILLIS_FOR_EACH_BTN
+_EMBBTN_MILLIS_DECLARATION;
+#endif
+
+//Timers
+#ifdef EMBBTN_GLOBAL_HLD_TIMER
+#define _EMBBTN_HLD_T embButtonHoldTimer
+const unsigned int embButtonHoldTimer = EMBBTN_GLOBAL_HLD_TIMER;
+#endif
+
+#ifdef EMBBTN_GLOBAL_RLS_TIMER
+#define _EMBBTN_RLS_T embButtonReleaseTimer
+const unsigned int embButtonReleaseTimer = EMBBTN_GLOBAL_RLS_TIMER;
+#endif
+
+#if defined(EMBBTN_GLOBAL_DEB_TIMER) && !defined(EMBBTN_DISABLE_DEBOUNCE)
+#define _EMBBTN_DEB_T embButtonDebTimer
+const unsigned int embButtonDebTimer = EMBBTN_GLOBAL_DEB_TIMER;
+#endif
+
+#if defined(EMBBTN_GLOBAL_STP_TIMER) && defined(EMBBTN_ENABLE_STEP)
+#define _EMBBTN_STP_T embButtonStepTimer
+const unsigned int embButtonStepTimer = EMBBTN_GLOBAL_STP_TIMER;
+#endif
+
+
+//Typedefs
 typedef enum
 {
-  EMB_BTN_STATE_RELEASED = -1,
-  EMB_BTN_STATE_AWAIT = 0,
-  EMB_BTN_STATE_PRESSED,
-  EMB_BTN_STATE_HELD
+  EMBBTN_STATE_IDL = 0,
+  EMBBTN_STATE_RLS,
+  EMBBTN_STATE_PRS,
+  EMBBTN_STATE_HLD
 } embButtonState;
 
 typedef struct
 {
-  char isClicked: 1;
-  char isReleased: 1;
-  char isHold: 1;
-  char endClicks: 1;
+  //flags
+  unsigned int clicked       :1;
+  unsigned int released      :1;
+  unsigned int held          :1;
+  unsigned int endClicking   :1;
+#ifndef EMBBTN_DISABLE_DEBOUNCE
+  unsigned int _lastState    :1;
+#endif
+#ifdef EMBBTN_ENABLE_STEP
+   unsigned int step         :1;
+#endif
+  //misc
+  unsigned int lastPressType :1;
+  //state(IDLE, RELEASED, PRESSED, HOLD)
+  embButtonState state       :2;
+  //
+  unsigned int clicks        :EMBBTN_CLICKS_VAR_SIZE;
+  //timestamps
+#ifndef EMBBTN_DISABLE_DEBOUNCE
+  unsigned long _lastChange;
+#endif
+  unsigned long timer;
+#ifdef EMBBTN_ENABLE_STEP
+  unsigned long _stepTimer;
+#endif
+} embButtonStats;
 
-  char lastPressType :1;
+typedef struct
+{
 
-  unsigned short clicks :EmbBtnMaxClicksSize;
+embButtonStats s;
 
-  unsigned int timer;
-#ifndef EmbBtnOneHoldTimer
-#define _EMBBTNHOLDTIMER btn->holdTime
+#ifndef EMBBTN_GLOBAL_HLD_TIMER
+#define _EMBBTN_HLD_T btn->holdTime
   unsigned int holdTime;
 #endif
-#ifndef EmbBtnOneReleaseTimer
-#define _EMBBTNRELEASETIMER btn->releaseTime
+
+#ifndef EMBBTN_GLOBAL_RLS_TIMER
+#define _EMBBTN_RLS_T btn->releaseTime
   unsigned int releaseTime;
 #endif
-#ifndef EmbBtnDisableDebounce
-  char _lastState;
-  unsigned int _lastChange;
-#ifndef EmbBtnOneDebTimer
-#define _EMBBTNDEBTIMER btn->debounceTime
+
+#if !defined(EMBBTN_DISABLE_DEBOUNCE) && !defined(EMBBTN_GLOBAL_DEB_TIMER)
+#define _EMBBTN_DEB_T btn->debounceTime
   unsigned int debounceTime;
 #endif
-#ifdef EmbBtnStepTimer
-  unsigned int secondTimer;
+
+#if defined(EMBBTN_ENABLE_STEP) && !defined(EMBBTN_GLOBAL_STP_TIMER)
+#define _EMBBTN_STP_T btn->stepTime
   unsigned int stepTime;
-  char step;
-#endif
-#endif
-  embButtonState state;
-#ifdef EmbBtnCheckButtonAsValue
-  char *buttonCheck;
-#else
-  char (*buttonCheck) ();
-#endif
-#ifndef EmbBtnOneMillisFunc
-#define _EMBBTNMILLISFUNC btn->millisFunc
-  unsigned long (*millisFunc) ();
 #endif
 
-#ifdef EmbBtnUseActionCallbacks
-  void (*clickedCallback) ();
-  void (*heldCallback) ();
-  void (*releasedCallback) ();
-  void (*endClicksCallback) ();
+_EMBBTN_BTN_DECLARATION;
+
+#ifdef EMBBTN_MILLIS_FOR_EACH_BTN
+_EMBBTN_MILLIS_DECLARATION;
+#endif
+
+#ifdef EMBBTN_USE_ACTION_CALLBACKS
+  void (*clickedCallback) (void *);
+  void (*heldCallback) (void *);
+  void (*releasedCallback) (void *);
+  void (*endClicksCallback) (void *);
 #endif
 } embButton_t;
 
-#ifdef EmbButtonHandleMultipleButtons
-EmbVarFunPrefix void embButtonTick(embButton_t *btns, size_t am)
-{
-  if (!btns)
-    return;
-  for (embButton_t* btn = btns; btn < btns + am; btn++){
-#else
-EmbVarFunPrefix void embButtonTick(embButton_t *btn)
+
+//Functions
+void embButtonTick(embButton_t *btn)
 {
   if (!btn)
     return;
-#endif
-  if (!btn->buttonCheck || !_EMBBTNMILLISFUNC)
-  {
-    return;
-  }
-  unsigned long t = _EMBBTNMILLISFUNC();
-#ifdef EmbBtnCheckButtonAsValue
-  char reading = *btn->buttonCheck;
-#else
-  char reading = btn->buttonCheck();
-#endif
-  btn->isHold = 0;
-  if (btn->isClicked)
-  {
-    btn->timer = t;
-    btn->isClicked = 0;
-  }
-  if (btn->isReleased)
-  {
-      btn->timer = t;
-      btn->isReleased = 0;
-  }
-  if (btn->endClicks)
-  {
-    btn->clicks = 0;
-    btn->endClicks = 0;
-  }
-#ifdef EmbBtnStepTimer
-    btn->step = 0;
-#endif
 
-#ifndef EmbBtnDisableDebounce
-  if (reading != btn->_lastState)
+  unsigned long t = _EMBBTN_MILLIS_READ;
+  char reading = _EMBBTN_BTN_READ;
+
+  btn->s.held = 0;
+#ifdef EMBBTN_ENABLE_STEP
+  btn->s.step = 0;
+#endif
+  if (btn->s.clicked)
   {
-    btn->_lastChange = t;
+    btn->s.timer = t;
+    btn->s.clicked = 0;
   }
-  if (t - btn->_lastChange > _EMBBTNDEBTIMER)
+  if (btn->s.released)
+  {
+    btn->s.timer = t;
+    btn->s.released = 0;
+  }
+  if (btn->s.endClicking)
+  {
+    btn->s.clicks = 0;
+    btn->s.endClicking = 0;
+  }
+
+#ifndef EMBBTN_DISABLE_DEBOUNCE
+  if (reading != btn->s._lastState)
+  {
+    btn->s._lastChange = t;
+  }
+  if (t - btn->s._lastChange > _EMBBTN_DEB_T)
   {
 #endif
     if (reading)
     {
-      switch (btn->state)
+      switch (btn->s.state)
       {
-        case EMB_BTN_STATE_AWAIT: case EMB_BTN_STATE_RELEASED:
-          btn->state = EMB_BTN_STATE_PRESSED;
-          btn->clicks++;
-          btn->isClicked = 1;
+        case EMBBTN_STATE_IDL: case EMBBTN_STATE_RLS:
+          btn->s.state = EMBBTN_STATE_PRS;
+          btn->s.clicks++;
+          btn->s.clicked = 1;
         break;
 
-        case EMB_BTN_STATE_PRESSED:
-          if (t - btn->timer >= _EMBBTNHOLDTIMER)
+        case EMBBTN_STATE_PRS:
+          if (t - btn->s.timer >= _EMBBTN_HLD_T)
           {
-            btn->state = EMB_BTN_STATE_HELD;
-            btn->isHold = 1;
-#ifdef EmbBtnStepTimer
-            btn->secondTimer = t;
+            btn->s.state = EMBBTN_STATE_HLD;
+            btn->s.held = 1;
+#ifdef EMBBTN_ENABLE_STEP
+            btn->s._stepTimer = t;
 #endif
           }
           break;
-#ifdef EmbBtnStepTimer
-        case EMB_BTN_STATE_HELD:
-          if (t - btn->secondTimer >= btn->stepTime)
+#ifdef EMBBTN_ENABLE_STEP
+        case EMBBTN_STATE_HLD:
+          if (t - btn->s._stepTimer >= _EMBBTN_STP_T)
           {
-            btn->step = 1;
-            btn->secondTimer = t;
+            btn->s.step = 1;
+            btn->s._stepTimer = t;
           }
           break;
 #endif
@@ -195,69 +256,91 @@ EmbVarFunPrefix void embButtonTick(embButton_t *btn)
     }
     else
     {
-      switch (btn->state)
+      switch (btn->s.state)
       {
-        case EMB_BTN_STATE_PRESSED: case EMB_BTN_STATE_HELD:
-          btn->isReleased = 1;
-          btn->lastPressType = btn->state - 1;
-#ifdef EmbBtnEndClicksAfterHolding
-          if (btn->clicks >= EmbBtnMaxClicks || btn->state == EMB_BTN_STATE_HELD)
+        case EMBBTN_STATE_PRS: case EMBBTN_STATE_HLD:
+          btn->s.released = 1;
+          btn->s.lastPressType = btn->s.state == EMBBTN_STATE_HLD;
+#ifdef EMBBTN_ENDCLICKING_AFTER_HOLD
+          if (btn->s.clicks >= EMBBTN_MAX_CLICKS || btn->s.state == EMBBTN_STATE_HLD)
           {
 #else
-          if (btn->clicks >= EmbBtnMaxClicks)
+          if (btn->s.clicks >= EMBBTN_MAX_CLICKS)
           {
 #endif
-            btn->state = EMB_BTN_STATE_AWAIT;
-            btn->endClicks = 1;
+            btn->s.state = EMBBTN_STATE_IDL;
+            btn->s.endClicking = 1;
           }
           else
           {
-            btn->state = EMB_BTN_STATE_RELEASED;
+            btn->s.state = EMBBTN_STATE_RLS;
           }
           break;
 
-        case EMB_BTN_STATE_RELEASED:
-          if (t - btn->timer >= _EMBBTNRELEASETIMER)
+        case EMBBTN_STATE_RLS:
+          if (t - btn->s.timer >= _EMBBTN_RLS_T)
           {
-            btn->state = EMB_BTN_STATE_AWAIT;
-            btn->endClicks = 1;
+            btn->s.state = EMBBTN_STATE_IDL;
+            btn->s.endClicking = 1;
           }
          break;
       }
     }
-#ifndef EmbBtnDisableDebounce
+#ifndef EMBBTN_DISABLE_DEBOUNCE
   }
-  btn->_lastState = reading;
-#endif
-#ifdef EmbButtonHandleMultipleButtons
-  }
+  btn->s._lastState = reading;
 #endif
 }
-#ifdef EmbBtnUseActionCallbacks
-#ifdef EmbButtonHandleMultipleButtons
-EmbVarFunPrefix void embButtonaActionCallcback(embButton_t *btns, size_t am)
-{
-  if (!btns)
-    return;
-  for (embButton_t* btn = btns; btn < btns + am; btn++){
-#else
-EmbVarFunPrefix void embButtonaActionCallcback(embButton_t *btn)
+
+#ifdef EMBBTN_USE_ACTION_CALLBACKS
+void embButtonActionCallback(embButton_t *btn)
 {
   if (!btn)
-  return;
-#endif
-  if (btn->isClicked)
-    btn->clickedCallback();
-  if (btn->isHold)
-    btn->heldCallback();
-  if (btn->isReleased)
-    btn->releasedCallback();
-  if (btn->endClicks)
-    btn->endClicksCallback();
-#ifdef EmbButtonHandleMultipleButtons
-  }
-#endif
+    return;
+  if (btn->s.clicked && btn->clickedCallback)
+    btn->clickedCallback(btn);
+  if (btn->s.held && btn->heldCallback)
+    btn->heldCallback(btn);
+  if (btn->s.released && btn->releasedCallback)
+    btn->releasedCallback(btn);
+  if (btn->s.endClicking && btn->endClicksCallback)
+    btn->endClicksCallback(btn);
 }
 #endif
+
+//Button reading defines
+#ifdef EMBBTN_READING_DEFS
+#define eb_isPressed(x) x.s.state >= EMBBTN_STATE_PRS
+#define eb_isClicked(x) x.s.clicked
+#define eb_isReleased(x) x.s.released
+#define eb_isHeld(x) x.s.held
+#define eb_onHold(x) x.s.state = EMBBTN_STATE_HLD
+#define eb_hasClicks(x) (!x.s.endClicking) ? x.s.clicks : 0
+#define eb_hadClicks(x) (x.s.endClicking) ? x.s.clicks : 0
+#define eb_wasClick(x) x.s.released && !x.s.lastPressType
+#define eb_wasHold(x) x.s.released && x.s.lastPressType
+#define eb_pressTime(x, mls) (x.s.state >= EMBBTN_STATE_PRS)? mls - x.s.timer : 0
+#define eb_releaseTime(x, mls) (x.s.state < EMBBTN_STATE_PRS)? mls - x.s.timer : 0
+#endif
+
+#ifdef EMBBTN_HANDLE_MULTIPLE_BTNS
+#define embButtonsTick(btns, count) \
+    for(size_t i = 0; i < count; i++) embButtonTick(&btns[i])
+#ifdef EMBBTN_USE_ACTION_CALLBACKS
+#define embButtonsActionCallback(btns, count) \
+    for(size_t i = 0; i < count; i++) embButtonActionCallback(&btns[i])
+#endif
+#endif
+
+#undef _EMBBTN_MILLIS_NAME
+#undef _EMBBTN_MILLIS_PREF
+#undef _EMBBTN_BTN_DECLARATION
+#undef _EMBBTN_BTN_READ
+#undef _EMBBTN_MILLIS_DECLARATION
+#undef _EMBBTN_MILLIS_READ
+#undef _EMBBTN_HLD_T
+#undef _EMBBTN_RLS_T
+#undef _EMBBTN_DEB_T
+#undef _EMBBTN_STP_T
 
 #endif
