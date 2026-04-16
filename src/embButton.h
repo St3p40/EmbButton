@@ -62,7 +62,7 @@
 #define _EMBBTN_BTN_DECLARATION unsigned char buttonCheck
 #define _EMBBTN_BTN_READ btn->buttonCheck
 #else
-#error EmbButton: EMBBTN_BTN_READ definition as macros isn't implemented
+#error "EmbButton: EMBBTN_BTN_READ definition as macros isn't implemented"
 #endif
 
 #if EMBBTN_BTN_MILLIS == CLBK
@@ -78,7 +78,7 @@
 #ifndef EMBBTN_MILLIS_FOR_EACH_BTN
 #define _EMBBTN_MILLIS_READ EmbBtnMillis
 #else
-#error EmbButton: EMBBTN_BTN_MILLIS can't be as macros with EMBBTN_MILLIS_FOR_EACH_BTN
+#error "EmbButton: EMBBTN_BTN_MILLIS can't be as macros with EMBBTN_MILLIS_FOR_EACH_BTN"
 #endif
 #endif
 
@@ -88,23 +88,19 @@ _EMBBTN_MILLIS_DECLARATION;
 
 //Timers
 #ifdef EMBBTN_GLOBAL_HLD_TIMER
-#define _EMBBTN_HLD_T embButtonHoldTimer
-const unsigned int embButtonHoldTimer = EMBBTN_GLOBAL_HLD_TIMER;
+#define _EMBBTN_HLD_T EMBBTN_GLOBAL_HLD_TIMER
 #endif
 
 #ifdef EMBBTN_GLOBAL_RLS_TIMER
-#define _EMBBTN_RLS_T embButtonReleaseTimer
-const unsigned int embButtonReleaseTimer = EMBBTN_GLOBAL_RLS_TIMER;
+#define _EMBBTN_RLS_T EMBBTN_GLOBAL_RLS_TIMER
 #endif
 
 #if defined(EMBBTN_GLOBAL_DEB_TIMER) && !defined(EMBBTN_DISABLE_DEBOUNCE)
-#define _EMBBTN_DEB_T embButtonDebTimer
-const unsigned int embButtonDebTimer = EMBBTN_GLOBAL_DEB_TIMER;
+#define _EMBBTN_DEB_T EMBBTN_GLOBAL_DEB_TIMER
 #endif
 
 #if defined(EMBBTN_GLOBAL_STP_TIMER) && defined(EMBBTN_ENABLE_STEP)
-#define _EMBBTN_STP_T embButtonStepTimer
-const unsigned int embButtonStepTimer = EMBBTN_GLOBAL_STP_TIMER;
+#define _EMBBTN_STP_T EMBBTN_GLOBAL_STP_TIMER
 #endif
 
 
@@ -185,7 +181,39 @@ _EMBBTN_MILLIS_DECLARATION;
 #endif
 } embButton_t;
 
+void embButtonTick(embButton_t *btn);
+#ifdef EMBBTN_USE_ACTION_CALLBACKS
+void embButtonActionCallback(embButton_t *btn);
+#endif
 
+
+//Button reading defines
+#ifdef EMBBTN_READING_DEFS
+#define eb_isPressed(x) x.s.state >= EMBBTN_STATE_PRS
+#define eb_isClicked(x) x.s.clicked
+#define eb_isReleased(x) x.s.released
+#define eb_isHeld(x) x.s.held
+#define eb_onHold(x) x.s.state = EMBBTN_STATE_HLD
+#define eb_hasClicks(x) (!x.s.endClicking) ? x.s.clicks : 0
+#define eb_hadClicks(x) (x.s.endClicking) ? x.s.clicks : 0
+#define eb_wasClick(x) x.s.released && !x.s.lastPressType
+#define eb_wasHold(x) x.s.released && x.s.lastPressType
+#define eb_pressTime(x, mls) (x.s.state >= EMBBTN_STATE_PRS)? mls - x.s.timer : 0
+#define eb_releaseTime(x, mls) (x.s.state < EMBBTN_STATE_PRS)? mls - x.s.timer : 0
+#endif
+
+#ifdef EMBBTN_HANDLE_MULTIPLE_BTNS
+#define embButtonsTick(btns, count) \
+    for(size_t i = 0; i < count; i++) embButtonTick(&btns[i])
+#ifdef EMBBTN_USE_ACTION_CALLBACKS
+#define embButtonsActionCallback(btns, count) \
+    for(size_t i = 0; i < count; i++) embButtonActionCallback(&btns[i])
+#endif
+#endif
+
+#endif
+
+#ifdef EMBBTN_FUNCTIONS_IMPLEMENTATION
 //Functions
 void embButtonTick(embButton_t *btn)
 {
@@ -307,30 +335,7 @@ void embButtonActionCallback(embButton_t *btn)
     btn->endClicksCallback(btn);
 }
 #endif
-
-//Button reading defines
-#ifdef EMBBTN_READING_DEFS
-#define eb_isPressed(x) x.s.state >= EMBBTN_STATE_PRS
-#define eb_isClicked(x) x.s.clicked
-#define eb_isReleased(x) x.s.released
-#define eb_isHeld(x) x.s.held
-#define eb_onHold(x) x.s.state = EMBBTN_STATE_HLD
-#define eb_hasClicks(x) (!x.s.endClicking) ? x.s.clicks : 0
-#define eb_hadClicks(x) (x.s.endClicking) ? x.s.clicks : 0
-#define eb_wasClick(x) x.s.released && !x.s.lastPressType
-#define eb_wasHold(x) x.s.released && x.s.lastPressType
-#define eb_pressTime(x, mls) (x.s.state >= EMBBTN_STATE_PRS)? mls - x.s.timer : 0
-#define eb_releaseTime(x, mls) (x.s.state < EMBBTN_STATE_PRS)? mls - x.s.timer : 0
-#endif
-
-#ifdef EMBBTN_HANDLE_MULTIPLE_BTNS
-#define embButtonsTick(btns, count) \
-    for(size_t i = 0; i < count; i++) embButtonTick(&btns[i])
-#ifdef EMBBTN_USE_ACTION_CALLBACKS
-#define embButtonsActionCallback(btns, count) \
-    for(size_t i = 0; i < count; i++) embButtonActionCallback(&btns[i])
-#endif
-#endif
+#endif // EMBBTN_USE_ACTION_CALLBACKS
 
 #undef _EMBBTN_MILLIS_NAME
 #undef _EMBBTN_MILLIS_PREF
@@ -342,5 +347,3 @@ void embButtonActionCallback(embButton_t *btn)
 #undef _EMBBTN_RLS_T
 #undef _EMBBTN_DEB_T
 #undef _EMBBTN_STP_T
-
-#endif
