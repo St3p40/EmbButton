@@ -62,7 +62,7 @@
 #define _EMBBTN_BTN_DECLARATION unsigned char buttonCheck
 #define _EMBBTN_BTN_READ btn->buttonCheck
 #else
-#error "EmbButton: EMBBTN_BTN_READ definition as macros isn't implemented"
+#error EmbButton: EMBBTN_BTN_READ definition as macros isn't implemented
 #endif
 
 #if EMBBTN_BTN_MILLIS == CLBK
@@ -78,7 +78,7 @@
 #ifndef EMBBTN_MILLIS_FOR_EACH_BTN
 #define _EMBBTN_MILLIS_READ EmbBtnMillis
 #else
-#error "EmbButton: EMBBTN_BTN_MILLIS can't be as macros with EMBBTN_MILLIS_FOR_EACH_BTN"
+#error EmbButton: EMBBTN_BTN_MILLIS can't be as macros with EMBBTN_MILLIS_FOR_EACH_BTN
 #endif
 #endif
 
@@ -186,7 +186,6 @@ void embButtonTick(embButton_t *btn);
 void embButtonActionCallback(embButton_t *btn);
 #endif
 
-
 //Button reading defines
 #ifdef EMBBTN_READING_DEFS
 #define eb_isPressed(x) x.s.state >= EMBBTN_STATE_PRS
@@ -200,6 +199,12 @@ void embButtonActionCallback(embButton_t *btn);
 #define eb_wasHold(x) x.s.released && x.s.lastPressType
 #define eb_pressTime(x, mls) (x.s.state >= EMBBTN_STATE_PRS)? mls - x.s.timer : 0
 #define eb_releaseTime(x, mls) (x.s.state < EMBBTN_STATE_PRS)? mls - x.s.timer : 0
+#define eb_fullPressTime(x, mls) (x.s.released)? mls - x.s.timer : 0
+#define eb_fullIdleTime(x, mls) (x.s.clicked)? mls - x.s.timer : 0
+#ifdef EMBBTN_ENABLE_STEP
+#define eb_isStep(x) x.s.step
+#define eb_isStepTime(x, mls) (x.s.state == EMBBTN_STATE_HLD)? mls - _stepTimer : 0
+#endif
 #endif
 
 #ifdef EMBBTN_HANDLE_MULTIPLE_BTNS
