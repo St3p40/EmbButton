@@ -203,7 +203,7 @@ void embButtonActionCallback(embButton_t *btn);
 #define eb_fullIdleTime(x, mls) (x.s.clicked)? mls - x.s.timer : 0
 #ifdef EMBBTN_ENABLE_STEP
 #define eb_isStep(x) x.s.step
-#define eb_isStepTime(x, mls) (x.s.state == EMBBTN_STATE_HLD)? mls - _stepTimer : 0
+#define eb_stepTime(x, mls) (x.s.state == EMBBTN_STATE_HLD)? mls - _stepTimer : 0
 #endif
 #endif
 
