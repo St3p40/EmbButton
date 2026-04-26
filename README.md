@@ -21,20 +21,20 @@ embButtonMillis = millis;              // Assign system time source for all butt
 
 btn.buttonCheck=btn_read;              // Assign read pin function
 ```
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > All defines are need to be defined before including the library
 ### Changes with defines
 ```c
 #define EMBBTN_MILLIS_FOR_EACH_BTN
 btn.millis=millis;                     // Assign system time source for each button
 
-#define EMBBTN_BTN_MILLIS <CLBK/PNTR/VRBL/...>
-#define EMBBTN_BTN_READ   <CLBK/PNTR/VRBL/...>
+#define EMBBTN_BTN_MILLIS <CLBK/PNTR/VRBL>
+#define EMBBTN_BTN_READ   <CLBK/PNTR/VRBL>
 //
 //CLBK - assign callback
 //PNTR - assign pointer to the variable
 //VRBL - create variable that will be set manualy
-//...  - custom MACROS
+//#define EMBBTN_BTN_... ...  - custom MACROS
 //
 
 #define EMBBTN_GLOBAL_DEB_TIMER <value> // debounceTime

@@ -44,12 +44,10 @@
 #define _EMBBTN_MILLIS_PREF
 #endif
 
+#ifndef EMBBTN_BTN_READ_MACRO
+
 #ifndef EMBBTN_BTN_READ
 #define EMBBTN_BTN_READ CLBK
-#endif
-
-#ifndef EMBBTN_BTN_MILLIS
-#define EMBBTN_BTN_MILLIS CLBK
 #endif
 
 #if EMBBTN_BTN_READ == CLBK
@@ -62,7 +60,20 @@
 #define _EMBBTN_BTN_DECLARATION unsigned char buttonCheck
 #define _EMBBTN_BTN_READ btn->buttonCheck
 #else
-#error EmbButton: EMBBTN_BTN_READ definition as macros isn't implemented
+#error EmbButton: EMBBTN_BTN_READ is wrong, it must be CLBK, PNTR or VRBL
+#endif
+
+#else
+
+#define _EMBBTN_BTN_DECLARATION unsigned char buttonID
+#define _EMBBTN_BTN_READ EMBBTN_BTN_READ_MACRO
+
+#endif //EMBBTN_BTN_READ_MACRO
+
+#ifndef _EMBBTN_MILLIS_READ_MACRO
+
+#ifndef EMBBTN_BTN_MILLIS
+#define EMBBTN_BTN_MILLIS CLBK
 #endif
 
 #if EMBBTN_BTN_MILLIS == CLBK
@@ -75,10 +86,14 @@
 #define _EMBBTN_MILLIS_DECLARATION unsigned long buttonCheck
 #define _EMBBTN_MILLIS_READ _EMBBTN_MILLIS_PREF _EMBBTN_MILLIS_NAME
 #else
-#ifndef EMBBTN_MILLIS_FOR_EACH_BTN
-#define _EMBBTN_MILLIS_READ EmbBtnMillis
+#error EmbButton: EMBBTN_BTN_MILLIS is wrong, it must be CLBK, PNTR or VRBL
+#endif
+
 #else
-#error EmbButton: EMBBTN_BTN_MILLIS can't be as macros with EMBBTN_MILLIS_FOR_EACH_BTN
+#ifndef EMBBTN_MILLIS_FOR_EACH_BTN
+#define _EMBBTN_MILLIS_READ EMBBTN_BTN_MILLIS_MACRO
+#else
+#error EmbButton: EMBBTN_BTN_MILLIS_MACRO can't be used with EMBBTN_MILLIS_FOR_EACH_BTN
 #endif
 #endif
 
