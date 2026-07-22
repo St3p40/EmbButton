@@ -1,5 +1,5 @@
-#ifndef __EMBBUTTON_H__
-#define __EMBBUTTON_H__
+#ifndef EMBBUTTON_H
+#define EMBBUTTON_H
 
 //                                .::.
 //                           =@@@@%**#@@@@+
@@ -33,6 +33,16 @@
 
 #if EMBBTN_MAX_CLICKS > ((1 << EMBBTN_CLICKS_VAR_SIZE) - 1)
 #error EmbButton: EMBBTN_MAX_CLICKS is set without EMBBTN_CLICKS_VAR_SIZE or EMBBTN_MAX_CLICKS exceeds EMBBTN_CLICKS_VAR_SIZE capacity
+#endif
+
+#ifndef CLBK
+#define CLBK 0
+#endif
+#ifndef PNTR
+#define PNTR 1
+#endif
+#ifndef VRBL
+#define VRBL 2
 #endif
 
 //Input info
@@ -70,7 +80,7 @@
 
 #endif //EMBBTN_BTN_READ_MACRO
 
-#ifndef _EMBBTN_MILLIS_READ_MACRO
+#ifndef EMBBTN_BTN_MILLIS_MACRO
 
 #ifndef EMBBTN_BTN_MILLIS
 #define EMBBTN_BTN_MILLIS CLBK
@@ -83,7 +93,7 @@
 #define _EMBBTN_MILLIS_DECLARATION unsigned long* _EMBBTN_MILLIS_NAME
 #define _EMBBTN_MILLIS_READ * _EMBBTN_MILLIS_PREF _EMBBTN_MILLIS_NAME
 #elif EMBBTN_BTN_MILLIS == VRBL
-#define _EMBBTN_MILLIS_DECLARATION unsigned long buttonCheck
+#define _EMBBTN_MILLIS_DECLARATION unsigned long _EMBBTN_MILLIS_NAME
 #define _EMBBTN_MILLIS_READ _EMBBTN_MILLIS_PREF _EMBBTN_MILLIS_NAME
 #else
 #error EmbButton: EMBBTN_BTN_MILLIS is wrong, it must be CLBK, PNTR or VRBL
@@ -93,12 +103,12 @@
 #ifndef EMBBTN_MILLIS_FOR_EACH_BTN
 #define _EMBBTN_MILLIS_READ EMBBTN_BTN_MILLIS_MACRO
 #else
-#error EmbButton: EMBBTN_BTN_MILLIS_MACRO can't be used with EMBBTN_MILLIS_FOR_EACH_BTN
+#error EmbButton: EMBBTN_BTN_MILLIS_MACRO cannot be used with EMBBTN_MILLIS_FOR_EACH_BTN
 #endif
 #endif
 
-#ifndef EMBBTN_MILLIS_FOR_EACH_BTN
-_EMBBTN_MILLIS_DECLARATION;
+#if !defined(EMBBTN_MILLIS_FOR_EACH_BTN) && !defined(EMBBTN_BTN_MILLIS_MACRO)
+extern _EMBBTN_MILLIS_DECLARATION;
 #endif
 
 //Timers
@@ -203,31 +213,31 @@ void embButtonActionCallback(embButton_t *btn);
 
 //Button reading defines
 #ifdef EMBBTN_READING_DEFS
-#define eb_isPressed(x) x.s.state >= EMBBTN_STATE_PRS
-#define eb_isClicked(x) x.s.clicked
-#define eb_isReleased(x) x.s.released
-#define eb_isHeld(x) x.s.held
-#define eb_onHold(x) x.s.state = EMBBTN_STATE_HLD
-#define eb_hasClicks(x) (!x.s.endClicking) ? x.s.clicks : 0
-#define eb_hadClicks(x) (x.s.endClicking) ? x.s.clicks : 0
-#define eb_wasClick(x) x.s.released && !x.s.lastPressType
-#define eb_wasHold(x) x.s.released && x.s.lastPressType
-#define eb_pressTime(x, mls) (x.s.state >= EMBBTN_STATE_PRS)? mls - x.s.timer : 0
-#define eb_releaseTime(x, mls) (x.s.state < EMBBTN_STATE_PRS)? mls - x.s.timer : 0
-#define eb_fullPressTime(x, mls) (x.s.released)? mls - x.s.timer : 0
-#define eb_fullIdleTime(x, mls) (x.s.clicked)? mls - x.s.timer : 0
+#define eb_isPressed(x) (x.s.state >= EMBBTN_STATE_PRS)
+#define eb_isClicked(x) (x.s.clicked)
+#define eb_isReleased(x) (x.s.released)
+#define eb_isHeld(x) (x.s.held)
+#define eb_onHold(x) (x.s.state = EMBBTN_STATE_HLD)
+#define eb_hasClicks(x) ((!x.s.endClicking) ? x.s.clicks : 0)
+#define eb_hadClicks(x) ((x.s.endClicking) ? x.s.clicks : 0)
+#define eb_wasClick(x) (x.s.released && !x.s.lastPressType)
+#define eb_wasHold(x) (x.s.released && x.s.lastPressType)
+#define eb_pressTime(x, mls) ((x.s.state >= EMBBTN_STATE_PRS) ? mls - x.s.timer : 0)
+#define eb_releaseTime(x, mls) ((x.s.state < EMBBTN_STATE_PRS) ? mls - x.s.timer : 0)
+#define eb_fullPressTime(x, mls) ((x.s.released) ? mls - x.s.timer : 0)
+#define eb_fullIdleTime(x, mls) ((x.s.clicked) ? mls - x.s.timer : 0)
 #ifdef EMBBTN_ENABLE_STEP
-#define eb_isStep(x) x.s.step
-#define eb_stepTime(x, mls) (x.s.state == EMBBTN_STATE_HLD)? mls - _stepTimer : 0
+#define eb_isStep(x) (x.s.step)
+#define eb_stepTime(x, mls) ((x.s.state == EMBBTN_STATE_HLD) ? mls - x.s._stepTimer : 0)
 #endif
 #endif
 
 #ifdef EMBBTN_HANDLE_MULTIPLE_BTNS
 #define embButtonsTick(btns, count) \
-    for(size_t i = 0; i < count; i++) embButtonTick(&btns[i])
+    for(int i = 0; i < count; i++) embButtonTick(&btns[i])
 #ifdef EMBBTN_USE_ACTION_CALLBACKS
 #define embButtonsActionCallback(btns, count) \
-    for(size_t i = 0; i < count; i++) embButtonActionCallback(&btns[i])
+    for(int i = 0; i < count; i++) embButtonActionCallback(&btns[i])
 #endif
 #endif
 
@@ -235,6 +245,10 @@ void embButtonActionCallback(embButton_t *btn);
 
 #ifdef EMBBTN_FUNCTIONS_IMPLEMENTATION
 //Functions
+#if !defined(EMBBTN_MILLIS_FOR_EACH_BTN) && !defined(EMBBTN_BTN_MILLIS_MACRO)
+_EMBBTN_MILLIS_DECLARATION;
+#endif
+
 void embButtonTick(embButton_t *btn)
 {
   if (!btn)
@@ -355,7 +369,7 @@ void embButtonActionCallback(embButton_t *btn)
     btn->endClicksCallback(btn);
 }
 #endif
-#endif // EMBBTN_USE_ACTION_CALLBACKS
+#endif // EMBBTN_FUNCTIONS_IMPLEMENTATION
 
 #undef _EMBBTN_MILLIS_NAME
 #undef _EMBBTN_MILLIS_PREF

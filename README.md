@@ -34,7 +34,7 @@ btn.millis=millis;                     // Assign system time source for each but
 //CLBK - assign callback
 //PNTR - assign pointer to the variable
 //VRBL - create variable that will be set manualy
-//#define EMBBTN_BTN_... ...  - custom MACROS
+//#define EMBBTN_BTN_..._MACRO ...  - custom MACROS
 //
 
 #define EMBBTN_GLOBAL_DEB_TIMER <value> // debounceTime
@@ -90,7 +90,7 @@ void (*endClicksCallback) (void *);    // Triggers when s.endCliking
 embButtonTick(&btn);                   // Checks button's state and updates its' variables(only 1 button)
 
 #define EMBBTN_USE_ACTION_CALLBACKS
-embButtonaActionCallback(&btn);        // Event dispatcher (executes action callbacks)
+embButtonActionCallback(&btn);         // Event dispatcher (executes action callbacks)
 ```
 ## Misc defines
 ```c
@@ -108,20 +108,20 @@ embButtonsTick(btns, count)
 embButtonsActionCallback(btns, count)
 
 #define EMBBTN_READING_DEFS             // eb_...
-eb_isPressed(x) x.s.state >= EMBBTN_STATE_PRS
-eb_isClicked(x) x.s.clicked
-eb_isReleased(x) x.s.released
-eb_isHeld(x) x.s.held
-eb_onHold(x) x.s.state = EMBBTN_STATE_HLD
-eb_hasClicks(x) (!x.s.endClicking) ? x.s.clicks : 0
-eb_hadClicks(x) (x.s.endClicking) ? x.s.clicks : 0
-eb_wasClick(x) x.s.released && !x.s.lastPressType
-eb_wasHold(x) x.s.released && x.s.lastPressType
-eb_pressTime(x, mls) (x.s.state >= EMBBTN_STATE_PRS)? mls - x.s.timer : 0
-eb_releaseTime(x, mls) (x.s.state < EMBBTN_STATE_PRS)? mls - x.s.timer : 0
-eb_fullPressTime(x, mls) (x.s.released)? mls - x.s.timer : 0
-eb_fullIdleTime(x, mls) (x.s.clicked)? mls - x.s.timer : 0
+eb_isPressed(x) (x.s.state >= EMBBTN_STATE_PRS)
+eb_isClicked(x) (x.s.clicked)
+eb_isReleased(x) (x.s.released)
+eb_isHeld(x) (x.s.held)
+eb_onHold(x) (x.s.state = EMBBTN_STATE_HLD)
+eb_hasClicks(x) ((!x.s.endClicking) ? x.s.clicks : 0)
+eb_hadClicks(x) ((x.s.endClicking) ? x.s.clicks : 0)
+eb_wasClick(x) (x.s.released && !x.s.lastPressType)
+eb_wasHold(x) (x.s.released && x.s.lastPressType)
+eb_pressTime(x, mls) ((x.s.state >= EMBBTN_STATE_PRS) ? mls - x.s.timer : 0)
+eb_releaseTime(x, mls) ((x.s.state < EMBBTN_STATE_PRS) ? mls - x.s.timer : 0)
+eb_fullPressTime(x, mls) ((x.s.released) ? mls - x.s.timer : 0)
+eb_fullIdleTime(x, mls) ((x.s.clicked) ? mls - x.s.timer : 0)
 #define EMBBTN_ENABLE_STEP
-eb_isStep(x) x.s.step
-eb_stepTime(x, mls) (x.s.state == EMBBTN_STATE_HLD)? mls - _stepTimer : 0
+eb_isStep(x) (x.s.step)
+eb_stepTime(x, mls) ((x.s.state == EMBBTN_STATE_HLD) ? mls - x.s._stepTimer : 0)
 ```
